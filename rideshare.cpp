@@ -85,8 +85,12 @@ int main(int argc, char** argv){
     //a loop to make sure that the main thread doesn't end while the threads are running
     while(threadVar->broker.size() || threadVar->totRequests);
 
+    // a single micro second to make sure the threads have enough time to empty out the queue
+    usleep(1);
     //last critical section
     sem_wait(threadVar->criticalProtection);
+    threadVar->consumedFinal[CostAlgoDispatch] = threadVar->consumedCost;
+    threadVar->consumedFinal[FastAlgoDispatch] = threadVar->consumedFast;
     io_production_report(threadVar->produced, threadVar->consumedFinal);
     sem_post(threadVar->criticalProtection);
 

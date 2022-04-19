@@ -89,7 +89,18 @@ void* consumer(void* input){
     threadVar = (ThreadVars *)input;
     Consumers consType = threadVar->consType;
     threadVar->consType = ConsumerTypeN;
-    int consumedType[RequestTypeN] = {0, 0};
+    int *consumedType;
+    if(consType == FastAlgoDispatch){
+        consumedType = threadVar->consumedFast;
+        threadVar->consumedFast[HumanDriver] = 0;
+        threadVar->consumedFast[RoboDriver] = 0;
+    }
+    else if(consType == CostAlgoDispatch){
+        consumedType = threadVar->consumedCost;
+        threadVar->consumedCost[HumanDriver] = 0;
+        threadVar->consumedCost[RoboDriver] = 0;
+    }
+    
     Requests requestType;
     while(threadVar->broker.size() || threadVar->totRequests){
         //decrement to show that there is queueSize-1 items in the queue
@@ -102,7 +113,13 @@ void* consumer(void* input){
         threadVar->broker.pop();
 
         // increment consumed type and decrement from broker arr
-        consumedType[requestType]++;
+        if(consType == FastAlgoDispatch){
+            threadVar->consumedFast[requestType]++;
+        }
+        else if(consType == CostAlgoDispatch){
+            threadVar->consumedCost[requestType]++;
+        }
+
         threadVar->brokerArr[requestType]--;
         // show that there is space for another hdr in the queue
         if(requestType == HumanDriver){
@@ -110,7 +127,6 @@ void* consumer(void* input){
         }
         
         io_remove_type(consType, requestType, threadVar->brokerArr, consumedType);
-        threadVar->consumedFinal[consType] = consumedType;
 
         sem_post(threadVar->criticalProtection);
         //end of critical section

@@ -93,6 +93,8 @@ struct ThreadVars{
   sem_t *hdrInQueue;
   sem_t *maxHDRInQueue;
   int produced[RequestTypeN] = {0, 0};
+  int consumedFast[RequestTypeN];
+  int consumedCost[RequestTypeN];
   int *consumedFinal[RequestTypeN];
   int brokerArr[RequestTypeN];
   queue<Requests> broker;
